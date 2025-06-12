@@ -15,6 +15,13 @@ module.exports = [
     plugins: {
       jsdoc
     },
+    settings: {
+      jsdoc: {
+        tagNamePreference: {
+          'tag constructor': 'constructor'
+        }
+      }
+    },
     rules: {
       'jsdoc/check-alignment': 'error',
       'jsdoc/check-param-names': 'error',
