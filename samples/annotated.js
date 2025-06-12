@@ -1,23 +1,19 @@
 /**
- * @function isTableExtended
- * @description Checks if a specified child table is extended from a specified parent table.
- *
- * This function utilizes the TableUtils API to first check if the parent table exists and has extensions,
- * then retrieves its extensions and checks if the child table name is present in the list.
- *
- * @param {string} parent - The name of the potential parent table.
- * @param {string} child - The name of the potential child table.
- * @returns {boolean} True if the child table is extended from the parent, false otherwise. Returns false if the parent table doesn't exist or has no extensions.
+ * Checks if a child table extends a parent table
+ * 
+ * @param {string} parent - The name of the parent table
+ * @param {string} child - The name of the potential child table
+ * @returns {boolean} True if child extends parent, false otherwise
  */
 function isTableExtended(parent, child){
     gs.include("j2js");
     /**
-     * @class TableUtilsHelper
-     * @classdesc Provides helper functions for interacting with table extensions.
+     * @class TableExtensionUtil
+     * @classdesc Utility for checking table extension relationships.
      *
-     * This Script Include wraps common operations related to checking table hierarchies and extensions using the server-side TableUtils API.
-     * It can be used in various server-side scripts (Business Rules, Script Includes, etc.) to quickly determine if one table is extended from another.
-     * Use this class when you need to programmatically verify table relationships in your ServiceNow instance.
+     * This utility provides methods to determine if a specific table extends another table
+     * within the ServiceNow platform. It leverages the TableUtils API to identify parent-child
+     * table relationships and extension hierarchies.
      *
      * @author Auto-Generated
      * @version 1.0.0
@@ -39,5 +35,5 @@ function isTableExtended(parent, child){
 // TODO: Could not automatically inject the following doc block:
 /**
  * @constructor
- * @description Initialise the TableUtilsHelper class
+ * @description Initialise the TableExtensionUtil class
  */
