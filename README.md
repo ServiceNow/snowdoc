@@ -73,4 +73,13 @@ Create a *new* annotated copy while keeping the original code intact:
 poetry run snowdoc test.js -o annotated.js --inject-docs
 ```
 
+## Verification
+
+To verify a sample .JS file with generated JSDoc annotation in it, run eslint:
+
+```bash
+npm install --save-dev eslint eslint-plugin-jsdoc
+npx eslint samples/annotated.js
+```
+
 ---
