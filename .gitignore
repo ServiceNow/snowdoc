@@ -3,10 +3,20 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Poetry & virtualenv
+# Python/Poetry/virtualenv
 .env
 .venv
 poetry.lock
+
+# Node.js/npm/yarn/pnpm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # Distribution / packaging
 build/
@@ -37,3 +47,17 @@ htmlcov/
 
 # Local env files
 .env.*
+
+# JS/TS/Frontend build artifacts
+coverage/
+lib/
+lib-cov/
+*.tsbuildinfo
+*.tgz
+*.map
+
+# Misc
+*.swp
+*.swo
+.idea/
+Thumbs.db

@@ -1,5 +1,6 @@
 import os
 import re
+import subprocess
 from dotenv import load_dotenv, find_dotenv
 import boto3
 from google import genai
@@ -161,5 +162,12 @@ def generate_jsdoc_for_file(js_path, definition=None, api_name=None, output_path
             new_contents = jsdoc
         with open(output_path, "w") as out:
             out.write(new_contents)
+        # Run eslint --fix on the output file
+        try:
+            subprocess.run([
+                "npx", "eslint", "--fix", output_path
+            ], check=True)
+        except Exception as e:
+            print(f"[Warning] eslint --fix failed: {e}")
     else:
         print(jsdoc)
