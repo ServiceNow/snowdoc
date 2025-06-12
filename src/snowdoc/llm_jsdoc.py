@@ -42,10 +42,12 @@ def _ensure_credentials(provider: str):
 
 def run_claude(system_prompt: str, user_prompt: str) -> str:
     _ensure_credentials("claude")
-    os.environ['CLAUDE_AWS_ACCESS_KEY_ID'] = os.getenv("CLAUDE_AWS_ACCESS_KEY_ID")
-    os.environ['CLAUDE_AWS_SECRET_ACCESS_KEY'] = os.getenv("CLAUDE_AWS_SECRET_ACCESS_KEY")
-    os.environ['CLAUDE_AWS_DEFAULT_REGION'] = os.getenv("CLAUDE_AWS_DEFAULT_REGION")
-    bedrock_runtime = boto3.client("bedrock-runtime")
+    bedrock_runtime = boto3.client(
+        "bedrock-runtime",
+        region_name=os.getenv("CLAUDE_AWS_DEFAULT_REGION"),
+        aws_access_key_id=os.getenv("CLAUDE_AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=os.getenv("CLAUDE_AWS_SECRET_ACCESS_KEY")
+    )
     model_name = "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
     messages = [{
         "role": "user",
@@ -162,12 +164,5 @@ def generate_jsdoc_for_file(js_path, definition=None, api_name=None, output_path
             new_contents = jsdoc
         with open(output_path, "w") as out:
             out.write(new_contents)
-        # Run eslint --fix on the output file
-        try:
-            subprocess.run([
-                "npx", "eslint", "--fix", output_path
-            ], check=True)
-        except Exception as e:
-            print(f"[Warning] eslint --fix failed: {e}")
     else:
         print(jsdoc)

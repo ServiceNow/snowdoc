@@ -9,16 +9,18 @@ SPECIAL_RE = re.compile(r"[-/\\^$*+?.()|[\]{}]")      # chars to escape
 
 
 def _indent_block(block: str, indent: str) -> str:
-    """Prefix every docblock line with *indent*, stripping its original leading spaces to avoid double indent."""
-    lines = block.splitlines()
-    return "\n".join(
-        (indent + ln.lstrip() if ln.strip() else ln)     # preserve blank lines
-        for ln in lines
-    )
+    out = []
+    for i, ln in enumerate(block.splitlines()):
+        stripped = ln.lstrip()
 
-def _dedent_block(block: str) -> str:
-    """Left-trim all lines in *block* (used only for TODO leftovers)."""
-    return "\n".join(ln.lstrip() for ln in block.splitlines())
+        if not stripped:                       # preserve completely blank lines
+            out.append(indent)
+        elif i == 0:                           # the '/**' opener
+            out.append(indent + stripped)
+        else:                                  # every other line: add single sp.
+            out.append(f"{indent} {stripped}")
+
+    return "\n".join(out)
 
 def loose_regex(anchor_line: str) -> re.Pattern:
     """
@@ -80,7 +82,7 @@ def inject_docs(pairs, source_text: str) -> str:
             out_lines.extend([
                 "",
                 "// TODO: Could not automatically inject the following doc block:",
-                _dedent_block(comment)            # <──  dedent before appending
+                _indent_block(comment, "")
             ])
     return "\n".join(out_lines)
 

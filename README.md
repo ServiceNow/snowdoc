@@ -73,25 +73,13 @@ Create a *new* annotated copy while keeping the original code intact:
 poetry run snowdoc test.js -o annotated.js --inject-docs
 ```
 
-## Setting up ESLint for Snowdoc Output
+## Verification
 
-To ensure your generated JavaScript files are properly formatted and conform to best practices, Snowdoc can automatically run ESLint with the --fix flag on output files (if ESLint is installed and configured in your project).
-
-### Install ESLint and JSDoc plugin
+To verify a sample .JS file with generated JSDoc annotation in it, run eslint:
 
 ```bash
 npm install --save-dev eslint eslint-plugin-jsdoc
-```
-
----
-
-## Verification
-
-After setup, you can verify a sample .JS file with generated JSDoc annotation by running ESLint:
-
-```bash
 npx eslint samples/annotated.js
 ```
 
-If you use Snowdoc to generate or update files, ESLint will be run automatically on the output file (if available).
 ---
