@@ -5,7 +5,7 @@ from dotenv import load_dotenv, find_dotenv
 import boto3
 from google import genai
 from google.genai import types
-from .merge_signatures import extract_pairs, inject_docs as merge_inject_docs
+
 
 # Load environment variables from .env automatically
 load_dotenv(find_dotenv(), override=False)
@@ -63,6 +63,32 @@ def run_claude(system_prompt: str, user_prompt: str) -> str:
         if "text" in blk:
             return blk["text"]
     return ""
+
+def inject_jsdoc_with_llm(jsdoc: str, code_sample: str, provider: str) -> str:
+    """
+    Use the selected LLM provider to inject the given JSDoc into the code sample.
+    """
+    system_prompt = (
+        "You receive: (1) a JavaScript file and (2) one or more JSDoc blocks.\n"
+        "Insert each JSDoc block directly at the place it would be if a programmer wrote JSDoc for that JavaScript file.\n"
+        "If no reasonable match exists, drop that JSDoc block, do not insert it anywhere.\n"
+        "Do not alter, move, or reformat existing code in any other way.\n"
+        "Return the full JavaScript file—nothing more."
+    )
+
+
+    user_prompt = f"""
+JSDoc to inject:
+{jsdoc}
+
+JavaScript code:
+{code_sample}
+"""
+    if provider == "gemini":
+        raw_resp = run_gemini(system_prompt, user_prompt)
+    else:
+        raw_resp = run_claude(system_prompt, user_prompt)
+    return extract_js(raw_resp)
 
 def run_gemini(system_prompt, user_prompt):
     """Run a query through Gemini API"""
@@ -158,8 +184,9 @@ def generate_jsdoc_for_file(js_path, definition=None, api_name=None, output_path
     jsdoc = extract_js(raw_resp)
     if output_path:
         if inject_docs or os.path.abspath(output_path) == os.path.abspath(js_path):
-            merged_code = merge_inject_docs(extract_pairs(jsdoc), code_sample)
-            new_contents = merged_code
+            # LLM-based injection
+            injected_code = inject_jsdoc_with_llm(jsdoc, code_sample, provider)
+            new_contents = injected_code
         else:
             new_contents = jsdoc
         with open(output_path, "w") as out:
