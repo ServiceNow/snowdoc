@@ -1,10 +1,12 @@
 import os
 import re
+import subprocess
+import os
 from dotenv import load_dotenv, find_dotenv
 import boto3
 from google import genai
 from google.genai import types
-from .merge_signatures import extract_pairs, inject_docs as merge_inject_docs
+
 
 # Load environment variables from .env automatically
 load_dotenv(find_dotenv(), override=False)
@@ -41,10 +43,12 @@ def _ensure_credentials(provider: str):
 
 def run_claude(system_prompt: str, user_prompt: str) -> str:
     _ensure_credentials("claude")
-    os.environ['CLAUDE_AWS_ACCESS_KEY_ID'] = os.getenv("CLAUDE_AWS_ACCESS_KEY_ID")
-    os.environ['CLAUDE_AWS_SECRET_ACCESS_KEY'] = os.getenv("CLAUDE_AWS_SECRET_ACCESS_KEY")
-    os.environ['CLAUDE_AWS_DEFAULT_REGION'] = os.getenv("CLAUDE_AWS_DEFAULT_REGION")
-    bedrock_runtime = boto3.client("bedrock-runtime")
+    bedrock_runtime = boto3.client(
+        "bedrock-runtime",
+        region_name=os.getenv("CLAUDE_AWS_DEFAULT_REGION"),
+        aws_access_key_id=os.getenv("CLAUDE_AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=os.getenv("CLAUDE_AWS_SECRET_ACCESS_KEY")
+    )
     model_name = "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
     messages = [{
         "role": "user",
@@ -60,6 +64,32 @@ def run_claude(system_prompt: str, user_prompt: str) -> str:
         if "text" in blk:
             return blk["text"]
     return ""
+
+def inject_jsdoc_with_llm(jsdoc: str, code_sample: str, provider: str) -> str:
+    """
+    Use the selected LLM provider to inject the given JSDoc into the code sample.
+    """
+    system_prompt = (
+        "You receive: (1) a JavaScript file and (2) one or more JSDoc blocks.\n"
+        "Insert each JSDoc block directly at the place it would be if a programmer wrote JSDoc for that JavaScript file.\n"
+        "If no reasonable match exists, drop that JSDoc block, do not insert it anywhere.\n"
+        "Do not alter, move, or reformat existing code in any other way.\n"
+        "Return the full JavaScript file—nothing more."
+    )
+
+
+    user_prompt = f"""
+JSDoc to inject:
+{jsdoc}
+
+JavaScript code:
+{code_sample}
+"""
+    if provider == "gemini":
+        raw_resp = run_gemini(system_prompt, user_prompt)
+    else:
+        raw_resp = run_claude(system_prompt, user_prompt)
+    return extract_js(raw_resp)
 
 def run_gemini(system_prompt, user_prompt):
     """Run a query through Gemini API"""
@@ -83,24 +113,30 @@ def run_gemini(system_prompt, user_prompt):
 
 SYSTEM_PROMPT = """
 You are *ServiceNowDocBot*, an expert ServiceNow architect and technical writer.
-Turn the incoming API metadata into a single **JSDoc signature**, wrapped in a
-markdown ```javascript``` fence so downstream code can extract it easily.
+Your job is to generate complete JSDoc documentation for ServiceNow Script Includes.
 
-**Output rules (MUST follow exactly)**
-1. Respond with **one** markdown code fence only:  
-   ```javascript
-   // …code here…
-````
+======== Operating Modes ========
 
-No prose or extra lines before/after it.
-2. Inside the fence, follow this skeleton:
+The user prompt may specify a mode using the token `mode: <value>` where `<value>` is:
 
-```
+1. signature  (default)
+   • Produce ONLY a JSDoc-only signature—no method bodies—following the Signature Skeleton below.
+   • Wrap the entire result in **one** markdown ```javascript``` code fence and nothing else.
+
+2. inject
+   • Return the FULL JavaScript file with the generated JSDoc blocks inserted in the correct places above each class / function declaration.
+   • Do **not** otherwise modify, move, or re-format the existing code.
+   • Wrap the entire result in one ```javascript``` code fence.
+
+If the prompt omits `mode`, assume `signature`.
+
+======== Signature Skeleton (used ONLY in signature mode) ========
+
 /**
  * @class <API Name>
  * @classdesc <One-sentence summary>
  *
- * <In-depth, 2-to-4-sentence explanation so any reader instantly knows what
+ * <In-depth, 2–4 sentence explanation so any reader instantly knows what
  * the Script Include is for and when to use it.>
  *
  * @author Auto-Generated
@@ -114,17 +150,16 @@ var <API Name> = Class.create();
      */
     initialize: function() {},
 
-    …one docblock + empty stub for each public method found in Code Sample…
+    …one docblock + empty stub for each public method found in the input code sample…
 
     type: '<API Name>'
 };
-```
 
-3. Infer missing param / return types (string, number, boolean, GlideRecord,
-Array<Object>, Object, Date).
-4. Any function whose name starts with “_” is private (`@private`).
-5. **Never** include method bodies—just the JSDoc and empty stubs.
-"""
+======== Shared Guidelines ========
+
+• Infer missing param / return types (string, number, boolean, GlideRecord, Array<Object>, Object, Date).
+• Any function whose name starts with “_” is private (`@private`).
+• Never include method bodies when operating in `signature` mode."""
 
 USER_PROMPT_TEMPLATE = """
 Generate a fresh JSDoc signature for the following metadata.
@@ -148,17 +183,16 @@ def generate_jsdoc_for_file(js_path, definition=None, api_name=None, output_path
     user_prompt = USER_PROMPT_TEMPLATE.format(
         code_sample=code_sample,
     )
+    # Prepend the mode directive so the LLM knows whether to return only the signature or the full file with injected docs.
+    mode = "inject" if inject_docs or os.path.abspath(output_path or "") == os.path.abspath(js_path) else "signature"
+    user_prompt = f"mode: {mode}\n\n" + user_prompt
     if provider == "gemini":
         raw_resp = run_gemini(SYSTEM_PROMPT, user_prompt)
     else:
         raw_resp = run_claude(SYSTEM_PROMPT, user_prompt)
     jsdoc = extract_js(raw_resp)
     if output_path:
-        if inject_docs or os.path.abspath(output_path) == os.path.abspath(js_path):
-            merged_code = merge_inject_docs(extract_pairs(jsdoc), code_sample)
-            new_contents = merged_code
-        else:
-            new_contents = jsdoc
+        new_contents = jsdoc
         with open(output_path, "w") as out:
             out.write(new_contents)
     else:

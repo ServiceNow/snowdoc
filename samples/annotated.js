@@ -1,26 +1,13 @@
 /**
- * @class TableExtensionUtils
- * @classdesc Utility for checking table extension relationships.
- *
- * This utility provides functionality to determine if one table is an extension of another.
- * It leverages ServiceNow's TableUtils API to check the extension relationship between parent
- * and child tables, which is useful for inheritance-based validations and operations.
- *
- * @author Auto-Generated
- * @version 1.0.0
- */
-
-/**
- * @constructor
- * @description Initialise the TableExtensionUtils class
- */
-
-/**
- * Checks if a child table extends a parent table
+ * Determines if the child table extends the parent table.
  * 
- * @param {string} parent - The name of the potential parent table
- * @param {string} child - The name of the potential child table
- * @returns {boolean} True if child extends parent, false otherwise
+ * This function checks if a specified child table is an extension of a parent table
+ * by using TableUtils to get the list of extensions and verifying if the child
+ * table is in that list.
+ * 
+ * @param {String} parent - The parent table name to check
+ * @param {String} child - The child table name to verify as an extension
+ * @returns {Boolean} True if the child table extends the parent table, false otherwise
  */
 function isTableExtended(parent, child){
     gs.include("j2js");
