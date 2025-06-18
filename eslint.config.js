@@ -28,28 +28,28 @@ module.exports = [
     },
 
     rules: {
-      /* ---- keep lightweight hygiene checks ---- */
+      /* ---- lightweight hygiene checks ---- */
       'jsdoc/check-alignment': 'error',
       'jsdoc/check-syntax': 'error',
-      'jsdoc/check-tag-names': 'warn',
+      'jsdoc/check-tag-names': 'error',
 
-      /* ---- relaxed param/return rules ---- */
-      'jsdoc/require-param': 'off',
-      'jsdoc/require-param-description': 'off',
-      'jsdoc/require-param-type': 'off',
-      'jsdoc/require-param-name': 'off',
-      'jsdoc/require-returns': 'off',
-      'jsdoc/require-returns-description': 'off',
-      'jsdoc/require-returns-type': 'off',
+      /* ---- param/return rules ---- */
+      'jsdoc/require-param': 'warn',
+      'jsdoc/require-param-description': 'warn',
+      'jsdoc/require-param-type': 'warn',
+      'jsdoc/require-param-name': 'warn',
+      'jsdoc/require-returns': 'warn',
+      'jsdoc/require-returns-description': 'warn',
+      'jsdoc/require-returns-type': 'warn',
 
       /* ---- type sanity without punishing Glide* ---- */
       'jsdoc/no-undefined-types': ['warn', { definedTypes: SERVICENOW_TYPES }],
       'jsdoc/valid-types': 'warn',
 
-      /* ---- other heavyweight checks disabled ---- */
-      'jsdoc/check-param-names': 'off',
-      'jsdoc/check-types': 'off',
-      'jsdoc/implements-on-classes': 'off',
+      /* ---- other heavyweight checks set to warn ---- */
+      'jsdoc/check-param-names': 'warn',
+      'jsdoc/check-types': 'warn',
+      'jsdoc/implements-on-classes': 'warn',
     },
   },
 ];
