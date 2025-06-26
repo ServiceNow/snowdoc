@@ -1,0 +1,7 @@
+Code
+"function isTableExtended(parent, child) {
+  return TableUtils.hasParent(parent, child);
+}"
+"function calculateTotal(price, tax) {
+  return price + (price * tax);
+}"
