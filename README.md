@@ -57,7 +57,7 @@ poetry run snowdoc [OPTIONS] FILE
 
 ### Batch Processing
 
-Process multiple JavaScript files at once using a CSV or Excel file:
+Process multiple rows of JavaScript code at once using a CSV or Excel file:
 
 ```bash
 poetry run snowdoc --batch-file FILE.csv --code-column COLUMN1 --output-column COLUMN2 [OPTIONS]
@@ -65,8 +65,8 @@ poetry run snowdoc --batch-file FILE.csv --code-column COLUMN1 --output-column C
 
 | Option | Description |
 |--------|-------------|
-| `--batch-file PATH` | Path to a CSV or XLSX file containing code files to process. |
-| `--code-column NAME` | Column name in batch file containing JavaScript code content or file paths. |
+| `--batch-file PATH` | Path to a CSV or XLSX file containing code to process. |
+| `--code-column NAME` | Column name in batch file containing JavaScript code content. |
 | `--output-column NAME` | Column name in batch file to write generated JSDoc signatures. |
 | `--output PATH` | Optional path to save the processed batch file (if not specified, updates the original file). |
 | `--inject-docs` | Generate JSDoc blocks injected into the code rather than just signatures. |
@@ -92,7 +92,7 @@ Create a *new* annotated copy while keeping the original code intact:
 poetry run snowdoc test.js -o annotated.js --inject-docs
 ```
 
-Process a batch of files from a CSV:
+Process a batch from a CSV:
 
 ```bash
 poetry run snowdoc --batch-file scripts.csv --code-column script_code --output-column jsdoc_result
