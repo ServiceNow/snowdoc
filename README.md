@@ -42,6 +42,8 @@ GEMINI_KEY=...
 
 ## Command-line usage
 
+### Single File Processing
+
 ```bash
 poetry run snowdoc [OPTIONS] FILE
 ```
@@ -51,6 +53,23 @@ poetry run snowdoc [OPTIONS] FILE
 | `-i`, `--in-place` | Overwrite *FILE* by merging JSDoc blocks into the code. |
 | `-o`, `--output PATH` | Write result to *PATH*. If omitted the scaffold is printed to stdout. |
 | `--inject-docs` | When used **together with** `--output`, merges JSDoc into the code but saves the merged version to *PATH* (leaving the original file untouched). |
+| `--provider {claude,gemini}` | Choose the LLM backend (default `claude`). |
+
+### Batch Processing
+
+Process multiple JavaScript files at once using a CSV or Excel file:
+
+```bash
+poetry run snowdoc --batch-file FILE.csv --code-column COLUMN1 --output-column COLUMN2 [OPTIONS]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--batch-file PATH` | Path to a CSV or XLSX file containing code files to process. |
+| `--code-column NAME` | Column name in batch file containing JavaScript code content or file paths. |
+| `--output-column NAME` | Column name in batch file to write generated JSDoc signatures. |
+| `--output PATH` | Optional path to save the processed batch file (if not specified, updates the original file). |
+| `--inject-docs` | Generate JSDoc blocks injected into the code rather than just signatures. |
 | `--provider {claude,gemini}` | Choose the LLM backend (default `claude`). |
 
 ### Examples
@@ -71,6 +90,12 @@ Create a *new* annotated copy while keeping the original code intact:
 
 ```bash
 poetry run snowdoc test.js -o annotated.js --inject-docs
+```
+
+Process a batch of files from a CSV:
+
+```bash
+poetry run snowdoc --batch-file scripts.csv --code-column script_code --output-column jsdoc_result
 ```
 
 ## Verification
