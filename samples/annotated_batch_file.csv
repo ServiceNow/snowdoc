@@ -1,0 +1,25 @@
+Code,JSDoc,ESLint
+"function isTableExtended(parent, child) {
+  return TableUtils.hasParent(parent, child);
+}","/**
+ * Checks if a given child table is extended from a given parent table.
+ *
+ * @param {string} parent - The name of the potential parent table.
+ * @param {string} child - The name of the potential child table.
+ * @returns {boolean} True if the child table is extended from the parent table, false otherwise.
+ */
+function isTableExtended(parent, child) {
+  return TableUtils.hasParent(parent, child);
+}",PASSED
+"function calculateTotal(price, tax) {
+  return price + (price * tax);
+}","/**
+ * Calculates the total price of an item including tax.
+ *
+ * @param {number} price - The base price.
+ * @param {number} tax - The tax rate (e.g., 0.05 for 5%).
+ * @returns {number} The total price including tax.
+ */
+function calculateTotal(price, tax) {
+  return price + (price * tax);
+}",PASSED

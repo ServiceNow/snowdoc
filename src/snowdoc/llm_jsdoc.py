@@ -194,7 +194,7 @@ def generate_jsdoc_signature(code_content, provider="claude", mode="signature"):
     return extract_js(raw_resp)
 
 
-def generate_jsdoc_for_file(js_path, definition=None, api_name=None, output_path=None, provider="claude", inject_docs=False):
+def generate_jsdoc_for_file(js_path, definition=None, api_name=None, output_path=None, provider="claude", inject_docs=False, eslint_check=False):
     """
     Given a JS file, generate a JSDoc signature using Claude or Gemini and save or print it.
     """
@@ -210,6 +210,19 @@ def generate_jsdoc_for_file(js_path, definition=None, api_name=None, output_path
     
     # Generate JSDoc signature
     jsdoc = generate_jsdoc_signature(code_sample, provider=provider, mode=mode)
+    
+    # Run ESLint check if requested and inject_docs is enabled
+    if eslint_check and mode == "inject":
+        from .batch_processor import run_eslint_check
+        try:
+            eslint_results, is_success = run_eslint_check(jsdoc)
+            if is_success:
+                print(f"ESLint check passed for {js_path}")
+            else:
+                print(f"ESLint check found issues for {js_path}:")
+                print(f"\n{eslint_results}\n")
+        except Exception as e:
+            print(f"ESLint check failed: {str(e)}")
     
     if output_path:
         with open(output_path, "w") as out:

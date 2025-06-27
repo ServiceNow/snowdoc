@@ -1,13 +1,13 @@
 /**
- * Determines if the child table extends the parent table.
+ * Determines if a child table extends a parent table
  * 
- * This function checks if a specified child table is an extension of a parent table
- * by using TableUtils to get the list of extensions and verifying if the child
- * table is in that list.
+ * This function checks the table hierarchy to determine if the specified child table
+ * is an extension of the parent table. It uses the TableUtils API to examine the
+ * table relationships in the system.
  * 
- * @param {String} parent - The parent table name to check
- * @param {String} child - The child table name to verify as an extension
- * @returns {Boolean} True if the child table extends the parent table, false otherwise
+ * @param {string} parent - The name of the parent table to check
+ * @param {string} child - The name of the child table to verify as an extension
+ * @returns {boolean} True if the child table extends the parent table, false otherwise
  */
 function isTableExtended(parent, child){
     gs.include("j2js");
