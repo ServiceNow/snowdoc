@@ -42,6 +42,8 @@ GEMINI_KEY=...
 
 ## Command-line usage
 
+### Single File Processing
+
 ```bash
 poetry run snowdoc [OPTIONS] FILE
 ```
@@ -51,6 +53,25 @@ poetry run snowdoc [OPTIONS] FILE
 | `-i`, `--in-place` | Overwrite *FILE* by merging JSDoc blocks into the code. |
 | `-o`, `--output PATH` | Write result to *PATH*. If omitted the scaffold is printed to stdout. |
 | `--inject-docs` | When used **together with** `--output`, merges JSDoc into the code but saves the merged version to *PATH* (leaving the original file untouched). |
+| `--eslint-check` | Run ESLint check on the file (requires `--inject-docs` or `--in-place`). |
+| `--provider {claude,gemini}` | Choose the LLM backend (default `claude`). |
+
+### Batch Processing
+
+Process multiple rows of JavaScript code at once using a CSV or Excel file:
+
+```bash
+poetry run snowdoc --batch-file FILE.csv --code-column COLUMN1 --output-column COLUMN2 [OPTIONS]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--batch-file PATH` | Path to a CSV or XLSX file containing code to process. |
+| `--code-column NAME` | Column name in batch file containing JavaScript code content. |
+| `--output-column NAME` | Column name in batch file to write generated JSDoc signatures. |
+| `--output PATH` | Optional path to save the processed batch file (if not specified, updates the original file). |
+| `--inject-docs` | Generate JSDoc blocks injected into the code rather than just signatures. |
+| `--eslint-check` | Run ESLint check on each file in batch mode (requires `--inject-docs`). |
 | `--provider {claude,gemini}` | Choose the LLM backend (default `claude`). |
 
 ### Examples
@@ -73,7 +94,33 @@ Create a *new* annotated copy while keeping the original code intact:
 poetry run snowdoc test.js -o annotated.js --inject-docs
 ```
 
+Create a new annotated copy with ESLint validation:
+
+```bash
+poetry run snowdoc test.js -o annotated.js --inject-docs --eslint-check
+```
+
+In-place documentation with ESLint validation:
+
+```bash
+poetry run snowdoc -i test.js --eslint-check
+```
+
+Process a batch of files from a CSV:
+
+```bash
+poetry run snowdoc --batch-file scripts.csv --code-column script_code --output-column jsdoc_result
+```
+
+Process a batch of files and validate JSDoc with ESLint:
+
+```bash
+poetry run snowdoc --batch-file scripts.csv --code-column script_code --output-column jsdoc_result --inject-docs --eslint-check
+```
+
 ## Verification
+
+### Manual Verification
 
 To verify a sample .JS file with generated JSDoc annotation in it, run eslint:
 
@@ -81,5 +128,17 @@ To verify a sample .JS file with generated JSDoc annotation in it, run eslint:
 npm install --save-dev eslint eslint-plugin-jsdoc
 npx eslint samples/annotated.js
 ```
+
+### Automated Verification
+
+You can use the built-in ESLint check feature for both single files and batch processing:
+
+1. Make sure you have ESLint and the JSDoc plugin installed (as shown above)
+2. Use the `--eslint-check` flag along with `--inject-docs` or `--in-place` for single files
+3. Use the `--eslint-check` flag along with `--inject-docs` when running batch processing
+
+How ESLint results are presented:
+- **Single file mode**: Results are displayed in the console only, keeping your output files clean
+- **Batch processing mode**: Results are added to a separate "ESLint" column in the batch file
 
 ---

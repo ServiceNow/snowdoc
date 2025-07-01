@@ -7,8 +7,6 @@ import boto3
 from google import genai
 from google.genai import types
 
-
-# Load environment variables from .env automatically
 load_dotenv(find_dotenv(), override=False)
 
 CODE_RE = re.compile(r"```javascript\s+([\s\S]*?)```", re.IGNORECASE)
@@ -170,7 +168,33 @@ Code:
 ###
 """
 
-def generate_jsdoc_for_file(js_path, definition=None, api_name=None, output_path=None, provider="claude", inject_docs=False):
+def generate_jsdoc_signature(code_content, provider="claude", mode="signature"):
+    """
+    Generate JSDoc signature directly from code content.
+    
+    Args:
+        code_content (str): JavaScript code content to document
+        provider (str): LLM provider to use (claude or gemini)
+        mode (str): Mode to use (signature or inject)
+        
+    Returns:
+        str: Generated JSDoc signature
+    """
+    user_prompt = USER_PROMPT_TEMPLATE.format(
+        code_sample=code_content,
+    )
+    # Prepend the mode directive
+    user_prompt = f"mode: {mode}\n\n" + user_prompt
+    
+    if provider == "gemini":
+        raw_resp = run_gemini(SYSTEM_PROMPT, user_prompt)
+    else:
+        raw_resp = run_claude(SYSTEM_PROMPT, user_prompt)
+    
+    return extract_js(raw_resp)
+
+
+def generate_jsdoc_for_file(js_path, definition=None, api_name=None, output_path=None, provider="claude", inject_docs=False, eslint_check=False):
     """
     Given a JS file, generate a JSDoc signature using Claude or Gemini and save or print it.
     """
@@ -180,20 +204,28 @@ def generate_jsdoc_for_file(js_path, definition=None, api_name=None, output_path
         api_name = os.path.splitext(os.path.basename(js_path))[0]
     if definition is None:
         definition = ""
-    user_prompt = USER_PROMPT_TEMPLATE.format(
-        code_sample=code_sample,
-    )
-    # Prepend the mode directive so the LLM knows whether to return only the signature or the full file with injected docs.
+    
+    # Determine the mode
     mode = "inject" if inject_docs or os.path.abspath(output_path or "") == os.path.abspath(js_path) else "signature"
-    user_prompt = f"mode: {mode}\n\n" + user_prompt
-    if provider == "gemini":
-        raw_resp = run_gemini(SYSTEM_PROMPT, user_prompt)
-    else:
-        raw_resp = run_claude(SYSTEM_PROMPT, user_prompt)
-    jsdoc = extract_js(raw_resp)
+    
+    # Generate JSDoc signature
+    jsdoc = generate_jsdoc_signature(code_sample, provider=provider, mode=mode)
+    
+    # Run ESLint check if requested and inject_docs is enabled
+    if eslint_check and mode == "inject":
+        from .batch_processor import run_eslint_check
+        try:
+            eslint_results, is_success = run_eslint_check(jsdoc)
+            if is_success:
+                print(f"ESLint check passed for {js_path}")
+            else:
+                print(f"ESLint check found issues for {js_path}:")
+                print(f"\n{eslint_results}\n")
+        except Exception as e:
+            print(f"ESLint check failed: {str(e)}")
+    
     if output_path:
-        new_contents = jsdoc
         with open(output_path, "w") as out:
-            out.write(new_contents)
+            out.write(jsdoc)
     else:
         print(jsdoc)
