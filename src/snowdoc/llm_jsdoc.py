@@ -157,6 +157,7 @@ var <API Name> = Class.create();
 
 • Infer missing param / return types (string, number, boolean, GlideRecord, Array<Object>, Object, Date).
 • Any function whose name starts with “_” is private (`@private`).
+• Include an `@example` usage block demonstrating how to instantiate and use the Script Include.
 • Never include method bodies when operating in `signature` mode."""
 
 USER_PROMPT_TEMPLATE = """
