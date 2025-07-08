@@ -1,13 +1,15 @@
 /**
- * Determines if a child table extends a parent table
- * 
- * This function checks the table hierarchy to determine if the specified child table
- * is an extension of the parent table. It uses the TableUtils API to examine the
- * table relationships in the system.
- * 
- * @param {string} parent - The name of the parent table to check
- * @param {string} child - The name of the child table to verify as an extension
+ * Determines if one table extends another in the ServiceNow database schema
+ *
+ * @function isTableExtended
+ * @param {string} parent - The name of the potential parent table
+ * @param {string} child - The name of the potential child table
  * @returns {boolean} True if the child table extends the parent table, false otherwise
+ * @example
+ * // Check if the incident table extends the task table
+ * if(isTableExtended('task', 'incident')) {
+ *     gs.info('Incident extends task');
+ * }
  */
 function isTableExtended(parent, child){
     gs.include("j2js");
